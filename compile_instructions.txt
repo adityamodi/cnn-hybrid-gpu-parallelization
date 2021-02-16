@@ -1,0 +1,47 @@
+This is what works on rldl4
+
+create object file:
+nvcc -c -std=c++11 -I/home/vveeriah/openmpi/include -I/home/vveeriah/openmpi/include/openmpi -I/home/vveeriah/cuda/include simple_scheme_a.cu readubyte.cpp
+
+link to libraries:
+nvcc -lm -lcudart -lcublas -lcudnn -L/home/vveeriah/openmpi/lib -L/home/vveeriah/cuda/lib64 -lmpi -lopen-rte -lopen-pal -ldl -lnsl -lutil -lm simple_scheme_a.o readubyte.o -o simple_scheme_a
+
+run the compiled binary:
+/home/vveeriah/openmpi/bin/mpirun -np 4 simple_scheme_a
+
+
+--------
+
+bash.rc
+
+export CUDA_HOME=/usr/local/cuda-8.0
+export LD_LIBRARY_PATH=${CUDA_HOME}/lib64
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64/:$LD_LIBRARY_PATH
+export CUDA_HOME=/usr/local/cuda-8.0
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/vveeriah/cuda/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/vveeriah/openmpi/bin:/home/vveeriah/openmpi/lib:/home/vveeriah/openmpi/include
+export PYTHONPATH=/home/vveeriah/
+
+PATH=${CUDA_HOME}/bin:${PATH}
+PATH=$PATH:/home/vveeriah/openmpi/bin
+export PATH
+
+export MALMO_XSD_PATH="/home/vveeriah/Malmo-0.30/Schemas"
+# added by Anaconda2 installer
+export PATH="/home/vveeriah/anaconda2/bin:$PATH"
+
+
+----------------
+To profile:
+
+Time taken for pool to fc communication
+Time taken for model parallelism between FC layers (comm + forward pass) and (comm + backprop)
+Time taken for forward pass and backprop in conv layer
+Time taken for pool to fc in scheme b for wait for next batch if there is any
+Time taken when dividing layers sequentially!
+
+mv scheme_a_v1.cu simple_scheme_a.cu
+nvcc -c -std=c++11 -I/home/vveeriah/openmpi/include -I/home/vveeriah/openmpi/include/openmpi -I/home/vveeriah/cuda/include simple_scheme_a.cu readubyte.cpp
+nvcc -lm -lcudart -lcublas -lcudnn -L/home/vveeriah/openmpi/lib -L/home/vveeriah/cuda/lib64 -lmpi -lopen-rte -lopen-pal -ldl -lnsl -lutil -lm simple_scheme_a.o readubyte.o -o simple_scheme_a
+../mpirun -np 6 simple_scheme_a
+mv *.txt results/scheme_a/num_workers_3/batch_size_32/
